@@ -1,12 +1,14 @@
 /**
  * Create the promise returning `Async` suffixed versions of the functions below,
  * Promisify them if you can, otherwise roll your own promise returning function
- */ 
+ */
 
 var fs = require('fs');
 var request = require('needle');
 var crypto = require('crypto');
 var Promise = require('bluebird');
+
+
 
 // (1) Asyncronous HTTP request
 var getGitHubProfile = function (user, callback) {
@@ -47,7 +49,7 @@ var generateRandomTokenAsync; // TODO
 var readFileAndMakeItFunny = function(filePath, callback) {
   fs.readFile(filePath, 'utf8', function(err, file) {
     if (err) { return callback(err); }
-   
+
     var funnyFile = file.split('\n')
       .map(function(line) {
         return line + ' lol';
@@ -58,7 +60,26 @@ var readFileAndMakeItFunny = function(filePath, callback) {
   });
 };
 
-var readFileAndMakeItFunnyAsync; // TODO
+var getGitHubProfileAsync = Promise.promisify(getGitHubProfile);
+var generateRandomTokenAsync = Promise.promisify(generateRandomToken);
+//var readFileAndMakeItFunnyAsync = Promise.promisify(readFileAndMakeItFunny); // TODO
+var readFileAndMakeItFunnyAsync = function(filePath) {
+  var promise = new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, fileData) => {
+      if (err) {
+        reject(err);
+      } else {
+        var funnyFile = fileData.split('\n')
+          .map(function(line) {
+            return line + ' lol';
+          })
+          .join('\n');
+        resolve(funnyFile);
+      }
+    });
+  });
+  return promise;
+};
 
 // Export these functions so we can test them and reuse them in later exercises
 module.exports = {
